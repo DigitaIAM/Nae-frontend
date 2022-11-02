@@ -9,7 +9,6 @@
       <q-separator />
       <q-card-section>
         <q-scroll-area style="height: 50vh;">
-          {{ clone }}
           <div v-if="view === 'camera'">
             <PhotoFromCamera :url="pictureUrl" @uploaded="view = 'form'"/>
             <q-btn label="cancel" @click="view = 'form'" />
