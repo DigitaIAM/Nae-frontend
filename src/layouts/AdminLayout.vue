@@ -1,5 +1,5 @@
 <template>
-  <q-layout class="bg-grey-1" view="lHh Lpr lFf">
+  <q-layout class="bg-grey-1" view="hHh lpR fFf">
     <q-header elevated class="text-white" style="background: #24292e" height-hint="61.59">
       <q-toolbar class="q-py-sm q-px-md">
         <q-btn
@@ -11,7 +11,7 @@
           color="white"
           class="q-mr-sm"
           no-caps
-          @click="toggleLeftDrawer"
+          @click="drawer = !drawer"
         >苗</q-btn>
 
         <q-select
@@ -62,6 +62,10 @@
 
         <q-space />
 
+        {{ name }}
+
+        <q-space />
+
         <div class="q-pl-sm q-gutter-sm row items-center no-wrap">
           <q-btn v-if="$q.screen.gt.xs" dense flat round size="sm" icon="notifications" />
 
@@ -92,23 +96,33 @@
     </q-header>
 
     <q-drawer
-      v-model="leftDrawerOpen"
+      v-model="drawer"
       show-if-above
-      bordered
-    >
-      <q-list>
-        <q-item-label
-          header
-        >
-          Essential Links
-        </q-item-label>
+      
+      :mini="miniState"
+      @mouseover="miniState = false"
+      @mouseout="miniState = true"
+      mini-to-overlay
 
-        <EssentialLink
-          v-for="link in essentialLinks"
-          :key="link.title"
-          v-bind="link"
-        />
-      </q-list>
+      :width="200"
+      :breakpoint="500"
+      bordered
+      class="bg-grey-3"
+    >
+      <q-scroll-area class="fit">
+        <q-list padding>
+          <template v-for="(item, index) in menu">
+            <q-separator v-if="item.separator" :key="index" />
+            <EssentialLink
+              v-else
+              :key="item.label"
+              :title="item.label"
+              :icon="item.icon"
+              :link="item.link"
+            />
+          </template>
+        </q-list>
+      </q-scroll-area>
     </q-drawer>
 
     <q-page-container>
@@ -117,90 +131,77 @@
   </q-layout>
 </template>
 
-<script>
-import { defineComponent, ref } from 'vue'
-import EssentialLink from 'components/EssentialLink.vue'
+<script setup>
+import EssentialLink from '../components/EssentialLink.vue'
 
-const stringOptions = [
-  'quasarframework/quasar',
-  'quasarframework/quasar-awesome'
-]
+import { computed, ref } from 'vue'
 
-const linksList = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
-  },
-]
+import { storeToRefs } from 'pinia'
 
-export default defineComponent({
-  name: 'MainLayout',
+import { useOid } from '../stores/oid'
 
-  components: {
-    EssentialLink
-  },
-
-  setup () {
-    const leftDrawerOpen = ref(false)
-
-    const text = ref('')
-    const options = ref(null)
-    const filteredOptions = ref([])
-    const search = ref(null) // $refs.search
-
-    function filter (val, update) {
-      if (options.value === null) {
-        // load data
-        setTimeout(() => {
-          options.value = stringOptions
-          search.value.filter('')
-        }, 2000)
-        update()
-        return
-      }
-
-      if (val === '') {
-        update(() => {
-          filteredOptions.value = options.value.map(op => ({ label: op }))
-        })
-        return
-      }
-
-      update(() => {
-        filteredOptions.value = [
-          {
-            label: val,
-            type: 'In documents'
-          },
-          {
-            label: val,
-            type: 'In '
-          },
-          ...options.value
-            .filter(op => op.toLowerCase().includes(val.toLowerCase()))
-            .map(op => ({ label: op }))
-        ]
-      })
-    }
-
-    return {
-      essentialLinks: linksList,
-      leftDrawerOpen,
-      toggleLeftDrawer () {
-        leftDrawerOpen.value = !leftDrawerOpen.value
-      },
-
-      text,
-      options,
-      filteredOptions,
-      search,
-
-      filter
-    }
+const { org } = storeToRefs(useOid())
+const name = computed(() => {
+  console.log('org', org.value)
+  if (org.value) { 
+    return org.value.name || ''
+  } else {
+    return ''
   }
 })
+
+const menu = [
+  { label: 'Users', icon: 'person', link: '/admin/users' },
+  { label: 'Companies', icon: 'corporate_fare', link: '/admin/companies' },
+  { separator: true },
+  { label: 'Cameras', icon: 'camera', link: '/admin/cameras' },
+  { label: 'Shifts', icon: 'calendar_month', link: '/admin/shifts' },
+  { label: 'People', icon: 'people', link: '/admin/people' },
+  { label: 'Events', icon: 'inbox', link: '/admin/events' },
+]
+
+const drawer = ref(false)
+const miniState = ref(true)
+
+const text = ref('')
+const options = ref(null)
+const filteredOptions = ref([])
+const search = ref(null) // $refs.search
+
+function filter (val, update) {
+  if (options.value === null) {
+    // load data
+    setTimeout(() => {
+      options.value = stringOptions
+      search.value.filter('')
+    }, 2000)
+    update()
+    return
+  }
+
+  if (val === '') {
+    update(() => {
+      filteredOptions.value = options.value.map(op => ({ label: op }))
+    })
+    return
+  }
+
+  update(() => {
+    filteredOptions.value = [
+      {
+        label: val,
+        type: 'In documents'
+      },
+      {
+        label: val,
+        type: 'In '
+      },
+      ...options.value
+        .filter(op => op.toLowerCase().includes(val.toLowerCase()))
+        .map(op => ({ label: op }))
+    ]
+  })
+}
 </script>
 
 <style lang="sass">

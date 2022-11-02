@@ -17,7 +17,7 @@ const { configure } = require('quasar/wrappers');
 module.exports = configure(function (ctx) {
   return {
     // https://v2.quasar.dev/quasar-cli-webpack/supporting-ts
-    supportTS: false,
+    supportTS: true,
 
     // https://v2.quasar.dev/quasar-cli-webpack/prefetch-feature
     // preFetch: true,
@@ -26,7 +26,9 @@ module.exports = configure(function (ctx) {
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-webpack/boot-files
     boot: [
-      
+      'axios',
+      'TimeAgo',
+      'Pinia'
       
     ],
 
@@ -91,7 +93,10 @@ module.exports = configure(function (ctx) {
 
     // https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js#Property%3A-framework
     framework: {
-      config: {},
+      config: {
+        dark: 'true', // auto or true/false
+        loadingBar: {},
+      },
 
       // iconSet: 'material-icons', // Quasar icon set
       // lang: 'en-US', // Quasar language pack
@@ -104,7 +109,9 @@ module.exports = configure(function (ctx) {
       // directives: [],
 
       // Quasar plugins
-      plugins: []
+      plugins: [
+        'LoadingBar',
+      ]
     },
 
     // animations: 'all', // --- includes all animations
