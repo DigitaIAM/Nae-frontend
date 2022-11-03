@@ -4,7 +4,9 @@ import auth from '@feathersjs/authentication-client'
 import io from 'socket.io-client'
 // import { iff, discard } from 'feathers-hooks-common'
 
-const socket = io('http://localhost:3030', { transports: ['websocket'] })
+export const dataUrl = 'http://localhost:3030'
+
+const socket = io(dataUrl, { transports: ['websocket'] })
 
 // This variable name becomes the alias for this server.
 export const api: any = feathers()

@@ -71,9 +71,9 @@ import { storeToRefs } from 'pinia'
 import { useClones } from 'feathers-pinia'
 
 import { useActions } from '../../stores/actions'
-import { useCameras } from 'src/stores/cameras';
+import { useCameras } from 'src/stores/cameras'
 
-const backendUrl = "http://localhost:3030";
+import { dataUrl } from 'src/feathers'
 
 const fields = [
   { name: 'Name', type: 'text', field: 'name' },
@@ -99,7 +99,7 @@ const clone = ref({})
 const save = ref(undefined)
 
 const count = ref(0)
-const pictureUrl = computed(() => backendUrl+"/v1/picture?oid="+oid.value+"&pid="+pid.value+"&r="+count.value)
+const pictureUrl = computed(() => dataUrl+"/v1/picture?oid="+oid.value+"&pid="+pid.value+"&r="+count.value)
 
 const { visiable } = toRefs(props)
 watchEffect(() => {
