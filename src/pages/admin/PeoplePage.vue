@@ -18,7 +18,6 @@
       title='Person'
       :item="form.item"
       @onclose="onclose"
-      :visiable="form.item !== undefined"
     />
   </q-page>
 </template>

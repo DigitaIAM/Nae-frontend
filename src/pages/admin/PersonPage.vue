@@ -26,8 +26,10 @@
             <q-btn label="cancel" @click="view = 'form'" />
           </div>
           <q-form class="q-gutter-md" v-else>
+            <div class="row" v-for="error in tasks.errors" :key="error">
+              {{ error }}
+            </div>
             <div class="row">
-              {{ tasks.error }}
               <div class="col">
                 <div class="row" v-for="el in fields" :key="el.name">
                   <MultiComponent
@@ -53,9 +55,14 @@
       </q-card-section>
       <q-separator />
       <q-card-actions align="right" class="bg-white text-teal">
-        <q-btn flat label="Register user" :icon="userRegistered" color="primary" @click="onRegisterUser" :disable="isDisabled"/>
-        <q-btn flat label="Register picture" :icon="pictureRegistered" color="primary" @click="onRegisterPicture" :disable="isDisabled" />
-        <q-btn flat label="Save" :icon="saved" color="primary" @click="onStore" />
+        <q-btn flat label="Register on cameras" color="primary"
+          @click="onRegisterUser"
+          :disable="loading"
+          :loading="loading"
+          :percentage="percentage"
+        />
+        <!-- <q-btn flat label="Register picture" :icon="pictureRegistered" color="primary" @click="onRegisterPicture" :disable="isDisabled" /> -->
+        <q-btn flat label="Save" color="primary" @click="onStore" />
         <q-btn flat label="Close" @click="onClose" />
       </q-card-actions>
     </q-card>
@@ -70,6 +77,7 @@ import { ref, toRefs, watchEffect, reactive, computed, onMounted, onBeforeUnmoun
 import { storeToRefs } from 'pinia'
 import { useClones } from 'feathers-pinia'
 
+import { api } from 'src/feathers'
 import { useActions } from '../../stores/actions'
 import { useCameras } from 'src/stores/cameras'
 
@@ -88,7 +96,6 @@ const props = defineProps({
   title: String,
   // fields: Array,
   item: Object,
-  visiable: Boolean,
 })
 
 const view = ref('')
@@ -101,9 +108,9 @@ const save = ref(undefined)
 const count = ref(0)
 const pictureUrl = computed(() => dataUrl+"/v1/picture?oid="+oid.value+"&pid="+pid.value+"&r="+count.value)
 
-const { visiable } = toRefs(props)
+const visiable = computed(() => props.item !== undefined)
 watchEffect(() => {
-  // console.log('clones', props.item)
+  console.log('clones', props.item)
   const { clones, saveHandlers } = useClones({item: props.item}, {useExisting: false, debug: true})
   if (clones.item) {
     oid.value = clones.item.oid
@@ -120,14 +127,9 @@ watchEffect(() => {
 }, [props.item])
 
 const onStore = () => {
-  tasks.done = ''
   let params = { commit: false, query: { oid: oid.value } }
   save.value(undefined, params)
-    .then(r => {
-      emit('onclose')
-      // console.log(r)
-      // tasks.done = r?.wasDataSaved ? 'saved' : ''
-    })
+    .then(r => onClose())
     .catch(e => {
       console.log(e)
       error.value = e
@@ -135,83 +137,109 @@ const onStore = () => {
 }
 
 const onClose = () => {
-  tasks.id = ''
-  tasks.requests = []
-  tasks.error = ''
-  tasks.done = ''
+  tasksReset()
 
   view.value = 'form'
   emit('onclose')
 }
 
 const tasks = reactive({
-  id: '',
+  total: 0,
+  complited: 0,
+
   requests: [],
-  error: '',
-  done: '',
+  errors: [],
 })
-const isDisabled = computed(() => tasks.id !== '')
-const userRegistered = computed(() => tasks.done === 'onRegisterUser' ? 'done' : '')
-const pictureRegistered = computed(() => tasks.done === 'onRegisterPicture' ? 'done' : '')
-const saved = computed(() => tasks.done === 'saved' ? 'done' : '')
+const tasksReset = () => {
+  tasks.total = 0
+  tasks.complited = 0
+  tasks.requests = []
+  tasks.errors = []
+}
 
-const cameras = useCameras();
-const actions = useActions();
+const loading = computed(() => tasks.total != 0 && tasks.total != tasks.complited)
+const percentage = computed(() => tasks.complited / tasks.total)
+const userRegistered = computed(() => tasks.total != 0 && tasks.total === tasks.complited)
+
+const cameras = api.service('cameras')
+const actions = api.service('actions')
+
 const onRegisterUser = () => {
-  tasks.done = ''
-  tasks.id = 'onRegisterUser'
+  tasksReset()
+  tasks.total = -1
   cameras.find({query:{oid: oid.value}})
     .then(res => {
-      (res.data || []).forEach(cam => {
-        const item = new actions.Model({command: 'create_user', params: {oid: oid.value, cid: cam._id, pid: pid.value}})
-        item.create().then(task => tasks.requests.push(task))
+      let cams = (res.data || [])
+      tasks.total = cams.length
+      cams.forEach(cam => {
+        actions
+          .create({command: 'hikvision-create_user', params: {oid: oid.value, cid: cam._id, pid: pid.value}})
+          .then(task => {
+            console.log('onRegisterUser task', task)
+            tasks.requests.push(task)
+          })
+          .catch(e => {
+            console.log('error at onRegisterUser', e)
+            tasks.complited += 1
+          })
       });
     })
 }
 
-const onRegisterPicture = () => {
-  tasks.done = ''
-  tasks.id = 'onRegisterPicture'
-  cameras.find({query:{oid: oid.value}})
-    .then(res => {
-      (res.data || []).forEach(cam => {
-        const item = new actions.Model({command: 'register_picture', params: {oid: oid.value, pid: pid.value}})
-        item.create().then(task => tasks.requests.push(task))
-      });
+const registerImage = (cid) => {
+  tasks.total += 1
+  actions
+    .create({command: 'hikvision-register_image', params: {oid: oid.value, cid: cid, pid: pid.value}})
+    .then(task => {
+      console.log('onRegisterPicture task', task)
+      tasks.requests.push(task)
+    })
+    .catch(e => {
+      console.log('error at registerImage', e)
+      tasks.complited += 1
     })
 }
 
-const handlePatched = (item) => {
-  console.log('patched', item)
-  if (item?.state?.status === 'completed') {
+const handlePatched = (task) => {
+  console.log('patched', task)
+  if (task?.state?.status === 'completed') {
+    tasks.complited += 1
     for (const i in tasks.requests) {
-      const task = tasks.requests[i]
-      if (task._id === item._id) {
+      const t = tasks.requests[i]
+      if (task?._id === t._id) {
         tasks.requests.splice(i, 1)
       }
     }
-    if (tasks.id === 'onRegisterUser') {
-      const answer = item?.data?.UserInfoOutList?.UserInfoOut ?? []
-      const msg = answer[0]?.errorMsg
-      if (!(msg === 'Operation completed.' || msg === 'deviceUserAlreadyExist' || msg === 'employeeNoAlreadyExist')) {
-        tasks.error = msg || item?.data
+    if (task?.command === 'hikvision-create_user') {
+      console.log('hikvision-create_user')
+      if (task.state?.status === 'completed') {
+        console.log('completed')
+        const answer = task?.data?.UserInfoOutList?.UserInfoOut ?? []
+        const msg = answer[0]?.errorMsg
+        if (!(msg === 'Operation completed.' || msg === 'deviceUserAlreadyExist' || msg === 'employeeNoAlreadyExist')) {
+          console.log('error', msg || item?.data)
+          tasks.errors.push(msg || item?.data)
+        } else {
+          console.log('registerImage', task?.params?.cid)
+          registerImage(task?.params?.cid)
+        }
       }
-    } else if (tasks.id === 'onRegisterPicture') {
-      const msg = item?.data?.errorMsg
-      if (!(msg === 'Operation completed.')) {
-          tasks.error = msg || item?.data
+    } else if (task?.command === 'hikvision-register_image') {
+      console.log('hikvision-register_image')
+      if (task.state?.status === 'completed') {
+        console.log('completed')
+        const msg = task?.data?.errorMsg
+        if (!(msg === 'Operation completed.')) {
+            tasks.error = msg || item?.data
+        }
       }
-    }
-    if (tasks.id && tasks.requests.length === 0) {
-      tasks.done = tasks.id
-      tasks.id = ''
     }
   }
   // TODO check for error
 }
-actions.Model.on('patched', handlePatched)
+actions.on('patched', handlePatched)
 onBeforeUnmount(() => {
-  actions.Model.off('patched', handlePatched)
+  actions.off('patched', handlePatched)
 })
 
 const onkey = (e) => {
