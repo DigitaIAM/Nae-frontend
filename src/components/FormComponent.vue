@@ -61,28 +61,43 @@ const props = defineProps({
   visiable: Boolean,
 })
 
-const oid = ref('')
+const oid = computed(() => props.item?.oid)
 const clone = ref({})
 const save = ref(undefined)
 
 const { visiable } = toRefs(props)
+
+var last_id = ''
 watchEffect(() => {
-  const { clones, saveHandlers } = useClones(props, {useExisting: false, debug: true})
-  console.log('clones.item', clones.item)
-  if (clones.item) {
-    oid.value = clones.item.oid
-    clone.value = clones.item
-    const { save_item } = saveHandlers
-    save.value = save_item
-  } else {
-    oid.value = undefined
+  console.log('watchEffect', props.item)
+  const id = props.item?._id
+  if (id === undefined) {
     clone.value = {}
     save.value = undefined
+
+  } else if (id !== last_id) {
+    last_id = id
+
+    const { clones, saveHandlers } = useClones(props, {useExisting: false, debug: true})
+    const { save_item } = saveHandlers
+
+    if (clones.item) {
+      clone.value = clones.item
+      save.value = save_item
+    } else {
+      clone.value = {}
+      save.value = undefined
+    }
   }
 })
 
 const changeState = (state) => {
   console.log('changeState', state)
+  
+  clone.value = {}
+  save.value = undefined
+  last_id = ''
+
   emit('onclose')
 }
 
@@ -92,9 +107,7 @@ const onStore = () => {
   save.value(undefined, params)
     .then(r => {
       console.log('done')
-      emit('onclose')
-      // props.show = false
-      // form.item = undefined
+      changeState({})
     })
     .catch(e => console.log('e', e))
 }

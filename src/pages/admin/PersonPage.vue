@@ -11,7 +11,6 @@
         <q-scroll-area style="height: 50vh;">
           <div v-if="view === 'camera'">
             <PhotoFromCamera :url="pictureUrl" @uploaded="view = 'form'"/>
-            <q-btn label="cancel" @click="view = 'form'" />
           </div>
           <div v-else-if="view === 'file'">
             <q-uploader
@@ -23,10 +22,12 @@
               :max-file-size="1024*200"
               @uploaded="() => { count += 1; view = 'form'; }"
             />
-            <q-btn label="cancel" @click="view = 'form'" />
           </div>
           <q-form class="q-gutter-md" v-else>
-            <div class="row" v-for="error in tasks.errors" :key="error">
+            <div class="row" v-if="tasks.errors?.length > 0">
+              Error:
+            </div>
+            <div class="row" v-for="(error, i) in tasks.errors" :key="i">
               {{ error }}
             </div>
             <div class="row">
@@ -55,15 +56,20 @@
       </q-card-section>
       <q-separator />
       <q-card-actions align="right" class="bg-white text-teal">
-        <q-btn flat label="Register on cameras" color="primary"
-          @click="onRegisterUser"
-          :disable="loading"
-          :loading="loading"
-          :percentage="percentage"
-        />
-        <!-- <q-btn flat label="Register picture" :icon="pictureRegistered" color="primary" @click="onRegisterPicture" :disable="isDisabled" /> -->
-        <q-btn flat label="Save" color="primary" @click="onStore" />
-        <q-btn flat label="Close" @click="onClose" />
+        <template v-if="view === 'form'">
+          <q-btn flat label="Register on cameras" color="primary"
+            @click="onRegisterUser"
+            :disable="loading"
+            :loading="loading"
+            :percentage="percentage"
+          />
+          <!-- <q-btn flat label="Register picture" :icon="pictureRegistered" color="primary" @click="onRegisterPicture" :disable="isDisabled" /> -->
+          <q-btn flat label="Save" color="primary" @click="onStore" />
+          <q-btn flat label="Close" @click="onClose" />
+        </template>
+        <template v-else>
+          <q-btn flat label="Cancel" @click="view = 'form'" />
+        </template>
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -98,31 +104,42 @@ const props = defineProps({
   item: Object,
 })
 
-const view = ref('')
+const visiable = computed(() => props.item !== undefined)
+const { clones, saveHandlers } = useClones(props)
+const { save_item } = saveHandlers
 
-const oid = ref('')
-const pid = ref('')
+const view = ref('form')
+
+const oid = computed(() => props.item?.oid)
+const pid = computed(() => props.item?._id)
 const clone = ref({})
 const save = ref(undefined)
 
 const count = ref(0)
 const pictureUrl = computed(() => dataUrl+"/v1/picture?oid="+oid.value+"&pid="+pid.value+"&r="+count.value)
 
-const visiable = computed(() => props.item !== undefined)
+var last_id = ''
 watchEffect(() => {
-  console.log('clones', props.item)
-  const { clones, saveHandlers } = useClones({item: props.item}, {useExisting: false, debug: true})
-  if (clones.item) {
-    oid.value = clones.item.oid
-    pid.value = clones.item._id
-    clone.value = clones.item
-    const { save_item } = saveHandlers
-    save.value = save_item
-  } else {
-    oid.value = ''
-    pid.value = ''
+  console.log('watchEffect', props.item)
+  const id = props.item?._id;
+  if (id === undefined) {
+    last_id = ''
     clone.value = {}
     save.value = undefined
+
+  } else if (id !== last_id) {
+    last_id = id
+    
+    const { clones, saveHandlers } = useClones({item: props.item}, {useExisting: false, debug: true})
+    const { save_item } = saveHandlers
+    
+    if (clones.item) {
+      clone.value = clones.item
+      save.value = save_item
+    } else {
+      clone.value = {}
+      save.value = undefined
+    }
   }
 }, [props.item])
 
@@ -140,6 +157,11 @@ const onClose = () => {
   tasksReset()
 
   view.value = 'form'
+
+  clone.value = {}
+  save.value = undefined
+  last_id = ''
+  
   emit('onclose')
 }
 
@@ -197,6 +219,7 @@ const registerImage = (cid) => {
     .catch(e => {
       console.log('error at registerImage', e)
       tasks.complited += 1
+      tasks.errors.push('' + e)
     })
 }
 
@@ -230,7 +253,7 @@ const handlePatched = (task) => {
         console.log('completed')
         const msg = task?.data?.errorMsg
         if (!(msg === 'Operation completed.')) {
-            tasks.error = msg || item?.data
+            tasks.errors.push(msg || item?.data)
         }
       }
     }
