@@ -5,7 +5,9 @@
       plural-title="People"
       :store="store"
       :cols="[
+        { name: 'photo', label: 'photo', field: row => dataUrl+'/v1/picture?oid='+row.oid+'&pid='+row._id, required: true, align: 'left', sortable: false},
         { name: 'name', label: 'name', field: 'name', required: true, align: 'left', sortable: false},
+        { name: 'gender', label: 'gender', field: 'gender', required: true, align: 'left', sortable: false},
         { name: 'division', label: 'division', field: 'division', required: true, align: 'left', sortable: false},
         { name: 'position', label: 'position', field: 'position', required: true, align: 'left', sortable: false},
       ]"
@@ -25,6 +27,8 @@
 <script setup>
 import JornalAndForm from '../../components/JornalAndForm.vue';
 import PersonPage from './PersonPage.vue';
+
+import { dataUrl } from 'src/feathers'
 
 import { ref, toRefs, watchEffect, reactive, computed, onMounted, onUnmounted } from 'vue'
 

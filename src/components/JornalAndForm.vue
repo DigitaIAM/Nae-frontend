@@ -31,22 +31,41 @@
     </template>
 
     <template v-slot:body="props" v-if="properties.actions">
-        <q-tr :props="props">
-          <q-td key="name" :props="props">
-            <div class="q-pa-sm q-gutter-sm">
-              {{ props.row.name }}
-            </div>
-          </q-td>
-          <q-td key="actions" :props="props">
-            <div class="q-gutter-sm">
-              <q-btn square color="primary" icon="edit" @click="(e) => onclick(e, props.row)"/>
-              <template v-for="action in properties.actions" :key="action.id">
-                <q-btn square :color="action.color" :icon="action.icon" @click="(e) => onclick(e, props.row, action.id)"/>
-              </template>
-            </div>
-          </q-td>
-        </q-tr>
-      </template>
+      <q-tr :props="props">
+        <q-td key="name" :props="props">
+          <div class="q-pa-sm q-gutter-sm">
+            {{ props.row.name }}
+          </div>
+        </q-td>
+        <q-td key="actions" :props="props">
+          <div class="q-gutter-sm">
+            <q-btn square color="primary" icon="edit" @click="(e) => onclick(e, props.row)"/>
+            <template v-for="action in properties.actions" :key="action.id">
+              <q-btn square :color="action.color" :icon="action.icon" @click="(e) => onclick(e, props.row, action.id)"/>
+            </template>
+          </div>
+        </q-td>
+      </q-tr>
+    </template>
+
+    <template v-slot:body="props" v-else>
+      <q-tr :props="props">
+        <q-td
+          v-for="col in props.cols"
+          :key="col.name"
+          :props="props"
+          @click="event => onclick(event, props.row)"
+          auto-width
+        >
+          <!-- <div v-if="col.name =='photo'">{{ col.value }}</div> -->
+          <!-- <q-avatar rounded v-if="col.name =='photo'" size="80px"> -->
+          <q-img :src="col.value" style="height: 40px; max-width: 35px" v-if="col.name =='photo'" />
+          <!-- </q-avatar> -->
+          <span v-else>{{ col.value }}</span>
+
+        </q-td>
+      </q-tr>
+    </template>
   </q-table>
 
   <!-- {{ form.item }} -->
@@ -99,7 +118,7 @@ const params = computed(() => {
   const query = {}
   Object.assign(query, properties.context)
   Object.assign(query, pagination.value)
-  
+
   const search = (filter.value || '').trim()
   if (search) {
     query['$search'] = search
