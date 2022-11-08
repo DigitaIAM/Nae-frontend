@@ -33,7 +33,13 @@
             <div class="row">
               <div class="col">
                 <div class="row" v-for="el in fields" :key="el.name">
-                  <MultiComponent
+                  <q-option-group v-if="el.type === 'options'"
+                    v-model="clone[el.field]"
+                    :options="el.options"
+                    color="primary"
+                    inline
+                  />
+                  <MultiComponent v-else-if="el.type === 'text'"
                     v-model="clone[el.field]"
                     :label="el.name"
                     :type="el.type"
@@ -91,6 +97,7 @@ import { dataUrl } from 'src/feathers'
 
 const fields = [
   { name: 'Name', type: 'text', field: 'name' },
+  { name: 'Gender', type: 'options', field: 'gender', options: [{ label: 'male', value: 'male' }, { label: 'female', value: 'female' }] },
   { name: 'Position', type: 'text', field: 'position' },
   { name: 'Division', type: 'text', field: 'division' },
   { name: 'Sub-division', type: 'text', field: 'sub_division' },
