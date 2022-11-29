@@ -158,6 +158,8 @@ const menu = [
   { label: 'Shifts', icon: 'calendar_month', link: '/admin/shifts' },
   { label: 'People', icon: 'people', link: '/admin/people' },
   { label: 'Events', icon: 'inbox', link: '/admin/events' },
+  { separator: true },
+  { label: 'Attendance', icon: 'inbox', link: '/admin/attendance' },
 ]
 
 const drawer = ref(false)

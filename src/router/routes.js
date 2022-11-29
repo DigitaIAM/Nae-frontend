@@ -16,6 +16,8 @@ const routes = [
       { path: 'people', component: () => import('src/pages/admin/PeoplePage.vue') },
       { path: 'events', component: () => import('src/pages/admin/EventsPage.vue') },
 
+      { path: 'attendance', component: () => import('src/pages/admin/AttendanceReport.vue') },
+
       // { path: '/admin', component: () => import('pages/admin/IndexPage.vue'), meta: { requireLogin: true } }
     ]
   },
