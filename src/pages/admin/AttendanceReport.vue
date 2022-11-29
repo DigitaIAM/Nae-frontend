@@ -51,7 +51,7 @@ const today = () => {
   return yourDate.toISOString().split('T')[0]
 }
 
-const date = ref("2022-11-10") // today())
+const date = ref(today())
 const division = ref("Отдел снабжения и логистики")
 
 const { orgId } = storeToRefs(useOid())
