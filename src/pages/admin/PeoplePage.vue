@@ -12,7 +12,7 @@
         { name: 'position', label: 'position', field: 'position', required: true, align: 'left', sortable: false},
       ]"
       :fields="[]"
-      :context="{ oid: orgId }"
+      :context="{ oid: oid }"
       :onSelection="selected"
     />
 
@@ -37,7 +37,7 @@ import { usePeople } from '../../stores/people'
 import { storeToRefs } from 'pinia'
 import { useOid } from '../../stores/oid'
 
-const { orgId } = storeToRefs(useOid())
+const { oid } = storeToRefs(useOid())
 
 const store = usePeople()
 
