@@ -1,5 +1,5 @@
 <template>
-  <q-dialog v-model="visiable" @update:model-value="changeState">
+  <q-dialog v-model="isOpen" persistent>
     <q-card style="width: 700px; max-width: 80vw;">
       <q-toolbar class="q-pa-md">
         <q-icon name="person" size="md" class="text-primary"/>
@@ -44,7 +44,7 @@
 
 <script setup lang="ts">
 import MultiComponent from './MultiComponent.vue';
-import { ref, toRefs, watchEffect, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, toRefs, watch, watchEffect, reactive, computed, onMounted, onUnmounted } from 'vue'
 
 import { storeToRefs } from 'pinia'
 import { useFind, usePagination, useClones } from 'feathers-pinia'
@@ -52,47 +52,60 @@ import { useFind, usePagination, useClones } from 'feathers-pinia'
 import { useOid } from '../stores/oid'
 const { orgId } = storeToRefs(useOid())
 
-const emit = defineEmits(['onclose'])
+const emit = defineEmits(['onStore', 'onclose'])
 
 const props = defineProps({
   title: String,
   fields: Array,
   item: Object,
-  visiable: Boolean,
+  store: Object,
 })
 
 const oid = computed(() => props.item?.oid)
 const clone = ref({})
 const save = ref(undefined)
 
-const { visiable } = toRefs(props)
-
-var last_id = ''
-watchEffect(() => {
-  console.log('watchEffect', props.item)
-  const id = props.item?._id
-  if (id === undefined) {
-    clone.value = {}
-    save.value = undefined
-
-  } else if (id !== last_id) {
-    last_id = id
-
-    const { clones, saveHandlers } = useClones(props, {useExisting: false, debug: true})
-    const { save_item } = saveHandlers
-
-    if (clones.item) {
-      clone.value = clones.item
-      save.value = save_item
-    } else {
-      clone.value = {}
-      save.value = undefined
+const isOpen = computed({
+  get() {
+    return props.item !== undefined
+  },
+  set(value) {
+    console.log('set', value)
+    if (value == false) {
+      doClose()
     }
   }
 })
 
-const changeState = (state) => {
-  console.log('changeState', state)
+var last_id = ''
+// watchEffect(() => {
+watch(() => props.item, (item) => {
+  console.log('watch item', item)
+  const id = item?._id
+  if (item) {
+    if (id !== last_id) {
+      last_id = id
+
+      const { clones, saveHandlers } = useClones(props, {useExisting: false, debug: true})
+      const { save_item } = saveHandlers
+
+      if (clones.item) {
+        clone.value = clones.item
+        save.value = save_item
+      } else {
+        clone.value = {}
+        save.value = undefined
+      }
+    }
+  } else {
+    last_id = ''
+    clone.value = {}
+    save.value = undefined
+  }
+})
+
+const doClose = () => {
+  // console.log('changeState', state)
   
   clone.value = {}
   save.value = undefined
@@ -103,13 +116,23 @@ const changeState = (state) => {
 
 const onStore = () => {
   let params = { commit: false, query: { oid: oid.value } }
-  console.log('onStore', oid.value, params)
-  save.value(undefined, params)
-    .then(r => {
-      console.log('done')
-      changeState({})
+  // console.log('onStore', oid.value, params)
+  // if (save.value) { 
+  //  // update existing
+  //  save.value(undefined, params)
+  //    .then(r => {
+  //      console.log('done')
+  //      doClose()
+  //    })
+  //    .catch(e => console.log('e', e))
+  //}
+  const item = new props.store.Model(clone.value)
+  item.save({query: { oid: oid.value }})
+    .then(r => doClose())
+    .catch(e => {
+      console.log(e)
+      // error.value = e
     })
-    .catch(e => console.log('e', e))
 }
 
 const onkey = e => {

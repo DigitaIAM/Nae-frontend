@@ -68,6 +68,7 @@ import { reactive } from 'vue'
 
 import { useAuth } from '../stores/auth'
 import { useUsers } from '../stores/users'
+import { useOid } from '../stores/oid'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -88,7 +89,15 @@ const fnLogin = () => {
     email: login.username,
     password: login.password,
   })
-    .then(msg => router.push({ path: '/admin' }))
+    .then(msg => {
+      console.log('msg', msg)
+
+      const oids = msg.user?.oids || []
+      const { setOid } = useOid()
+      setOid(oids)
+      
+      router.push({ path: '/hr/attendance' })
+    })
     .catch(err => {
       if (err.message) {
         login.error = err.message

@@ -41,8 +41,12 @@ const { selectOrganization } = useOid()
 const router = useRouter()
 
 const click = (item, index) => {
-  selectOrganization(item, index)
-  router.push({ path: '/admin/' + index })
+  if (index && index !== -1) {
+    selectOrganization(item, index)
+    router.push({ path: '/admin/' + index })
+  } else {
+    return true
+  }
 }
 </script>
 

@@ -27,8 +27,13 @@ export default route(function (/* { store, ssrContext } */) {
     history: createHistory(process.env.MODE === 'ssr' ? void 0 : process.env.VUE_ROUTER_BASE)
   })
 
-  api.reAuthenticate().then(() => {
-    console.log('show application page')
+  api.reAuthenticate().then((msg) => {
+    console.log('show application page', msg)
+
+    const oids = msg.user?.oids || []
+    const { setOid } = useOid()
+    setOid(oids)
+
   }).catch(() => {
     console.log('show login page')
     Router.push('/login')

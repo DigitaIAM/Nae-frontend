@@ -72,9 +72,9 @@
   <FormComponent
     :title="properties.singularTitle"
     :item="form.item"
+    :store="properties.store"
     :fields="properties.fields"
     @onclose="onclose"
-    :visiable="form.item !== undefined"
   />
 </template>
 
@@ -86,9 +86,6 @@ import { ref, watchEffect, reactive, computed, onMounted, onUnmounted } from 'vu
 
 import { storeToRefs } from 'pinia'
 import { useGet, useFind, usePagination } from 'feathers-pinia'
-
-import { useOid } from '../stores/oid'
-const { orgId } = storeToRefs(useOid())
 
 const properties = defineProps({
   singularTitle: String,
@@ -175,7 +172,9 @@ const createNew = () => {
   const item = new properties.store.Model({})
   Object.assign(item, properties.context)
   if (properties.onSelection) {
-    properties.onSelection(item, -1)
+    if (properties.onSelection(item, -1)) {
+      form.item = item
+    }
   } else {
     form.item = item
   }
@@ -188,39 +187,15 @@ const onclose = () => {
 
 const onclick = (evt, row, index) => {
   console.log('onclick', properties.onSelection)
+  evt.stopPropagation()
   if (properties.onSelection) {
-    properties.onSelection(row, index)
+    if (properties.onSelection(row, index)) {
+      form.item = row
+    }
   } else {
     form.item = row
   }
 }
-
-const onStore = () => {
-  console.log('onStore')
-  form.item.save()
-    .then(r => {
-      form.item = undefined
-    })
-    .catch(e => console.log('e', e))
-}
-
-const onkey = e => {
-  // e.ctrlKey
-  if (e.metaKey && e.key === 's') {
-    e.preventDefault();
-    if (form.show) {
-      onStore()
-    }
-  }
-}
-
-onMounted(() => {
-  window.addEventListener('keydown', onkey)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', onkey)
-})
 </script>
 
 <style lang="sass" scoped>

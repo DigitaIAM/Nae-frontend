@@ -1,5 +1,5 @@
 <template>
-  <q-dialog v-model="visiable" @update:model-value="onClose">
+  <q-dialog v-model="isOpen" persistent>
     <q-card style="width: 700px; max-width: 80vw; height: 72vh;">
       <q-toolbar class="q-pa-md">
         <q-icon name="person" size="md" class="text-primary"/>
@@ -9,6 +9,7 @@
       <q-separator />
       <q-card-section>
         <q-scroll-area style="height: 50vh;">
+          <!-- {{ clone }} -->
           <div v-if="view === 'camera'">
             <PhotoFromCamera :url="pictureUrl" @uploaded="view = 'form'"/>
           </div>
@@ -33,14 +34,20 @@
             <div class="row">
               <div class="col">
                 <div class="row" v-for="el in fields" :key="el.name">
+                  <!-- v-model="getField(clone, el.field)" -->
                   <q-option-group v-if="el.type === 'options'"
-                    v-model="clone[el.field]"
+                    :modelValue="getField(clone, el.field)"
+                    @update:modelValue="setField(clone, el.field, $event)"
+
                     :options="el.options"
                     color="primary"
                     inline
                   />
+                  <!-- v-model="getField(clone, el.field)" -->
                   <MultiComponent v-else-if="el.type === 'text'"
-                    v-model="clone[el.field]"
+                    :modelValue="getField(clone, el.field)"
+                    @update:modelValue="setField(clone, el.field, $event)"
+
                     :label="el.name"
                     :type="el.type"
                     class="full-width q-pa-sm"
@@ -71,7 +78,7 @@
           />
           <!-- <q-btn flat label="Register picture" :icon="pictureRegistered" color="primary" @click="onRegisterPicture" :disable="isDisabled" /> -->
           <q-btn flat label="Save" color="primary" @click="onStore" />
-          <q-btn flat label="Close" @click="onClose" />
+          <q-btn flat label="Close" @click="doClose" />
         </template>
         <template v-else>
           <q-btn flat label="Cancel" @click="view = 'form'" />
@@ -90,8 +97,7 @@ import { storeToRefs } from 'pinia'
 import { useClones } from 'feathers-pinia'
 
 import { api } from 'src/feathers'
-import { useActions } from '../../stores/actions'
-import { useCameras } from 'src/stores/cameras'
+import { usePeople } from 'src/stores/people'
 
 import { dataUrl } from 'src/feathers'
 
@@ -101,6 +107,7 @@ const fields = [
   { name: 'Position', type: 'text', field: 'position' },
   { name: 'Division', type: 'text', field: 'division' },
   { name: 'Sub-division', type: 'text', field: 'sub_division' },
+  { name: 'employeeNoString', type: 'text', field: 'employeeNoString' },
 ]
 
 const emit = defineEmits(['onclose'])
@@ -111,7 +118,30 @@ const props = defineProps({
   item: Object,
 })
 
-const visiable = computed(() => props.item !== undefined)
+const getField = (obj, field) => {
+  if (obj[field] === undefined) {
+    obj[field] = ""
+  }
+  return obj[field]
+}
+
+const setField = (obj, field, value) => {
+  // console.log('setField 1', field, value)
+  obj[field] = value
+}
+
+const isOpen = computed({
+  get() {
+    return props.item !== undefined
+  },
+  set(value) {
+    console.log('set', value)
+    if (value == false) {
+      doClose()
+    }
+  }
+})
+
 const { clones, saveHandlers } = useClones(props)
 const { save_item } = saveHandlers
 
@@ -127,40 +157,54 @@ const pictureUrl = computed(() => dataUrl+"/v1/picture?oid="+oid.value+"&pid="+p
 
 var last_id = ''
 watchEffect(() => {
-  console.log('watchEffect', props.item)
+  // console.log('watchEffect', props.item)
   const id = props.item?._id;
-  if (id === undefined) {
+  if (props.item) {
+    if (id !== last_id) {
+      last_id = id
+      
+      const { clones, saveHandlers } = useClones({item: props.item}, {useExisting: false, debug: true})
+      const { save_item } = saveHandlers
+      
+      if (clones.item) {
+        clone.value = clones.item
+        save.value = save_item
+      } else {
+        clone.value = {}
+        save.value = undefined
+      }
+    }
+  } else {
     last_id = ''
     clone.value = {}
     save.value = undefined
-
-  } else if (id !== last_id) {
-    last_id = id
-    
-    const { clones, saveHandlers } = useClones({item: props.item}, {useExisting: false, debug: true})
-    const { save_item } = saveHandlers
-    
-    if (clones.item) {
-      clone.value = clones.item
-      save.value = save_item
-    } else {
-      clone.value = {}
-      save.value = undefined
-    }
   }
 }, [props.item])
 
 const onStore = () => {
-  let params = { commit: false, query: { oid: oid.value } }
-  save.value(undefined, params)
-    .then(r => onClose())
+  console.log('clone.value', clone.value)
+  // console.log('save.value', save.value)
+  // if (save.value) {
+  //   let params = { commit: false, query: { oid: oid.value } }
+  //   save.value(undefined, params)
+  //     .then(r => doClose())
+  //     .catch(e => {
+  //       console.log(e)
+  //       error.value = e
+  //     })
+  // }
+
+  const people = usePeople();
+  const item = new people.Model(clone.value)
+  item.save({query: { oid: oid.value }})
+    .then(r => doClose())
     .catch(e => {
       console.log(e)
-      error.value = e
+      // error.value = e
     })
 }
 
-const onClose = () => {
+const doClose = () => {
   tasksReset()
 
   view.value = 'form'

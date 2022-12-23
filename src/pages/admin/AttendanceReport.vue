@@ -1,7 +1,7 @@
 <template>
   <q-page padding>
     <q-input v-model="date" label="Date"/>
-    <q-input v-model="division" label="Division"/>
+    <!-- <q-input v-model="division" label="Division"/> -->
     <div class="row">
       <div class="col"></div>
       <div class="col">пришел</div>
@@ -52,9 +52,9 @@ const today = () => {
 }
 
 const date = ref(today())
-const division = ref("Отдел снабжения и логистики")
+const division = ref("") // Отдел снабжения и логистики
 
-const { orgId } = storeToRefs(useOid())
+const { oid } = storeToRefs(useOid())
 const report = useAttendanceReport()
 
 const label = (row, name) => {
@@ -67,7 +67,7 @@ const label = (row, name) => {
 
 const params = computed(() => {
   const query = {
-    oid: orgId.value,
+    oid: oid.value,
     date: date.value,
     division: division.value,
   }

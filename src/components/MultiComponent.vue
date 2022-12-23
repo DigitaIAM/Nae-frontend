@@ -31,7 +31,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const updateValue = (value) => {
-  console.log('updateValue', value)
+  // console.log('updateValue', value)
   emit('update:modelValue', value)
 }
 

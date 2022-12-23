@@ -7,23 +7,31 @@ const orgs = useСompanies();
 export const useOid = defineStore({
   id: 'selected-organization',
   state: () => ({
-    orgId: useLocalStorage('oid', null),
+    myData: { oids: [] }, // useLocalStorage('oid', null),
+    org: {},
     loading: false,
     error: null,
   }),
   getters: {
-    org(state) {
-      return state.orgId ? orgs.getFromStore(state.orgId) : undefined
+    oid(state) {
+      return state.myData.oids[0]
     }
   },
   actions: {
+    setOid(oids, selected) {
+      const oid = selected || oids[0]
+      Object.assign(this.myData, { oids: oids, selected: undefined });
+
+      orgs.get(oid)
+        .then(data => {
+          Object.assign(this.org, data);
+        })
+        .catch(e => {
+          console.log('error', e)
+        })
+    },
     selectOrganization(org) {
-      console.log('org', org._id);
-      if (org._id) {
-        this.orgId = org._id
-      } else {
-        org._id = null
-      }
+      setOid(this.myData.oids, org?._id)
     },
   },
 })

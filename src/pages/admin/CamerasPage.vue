@@ -19,6 +19,7 @@
       :fields="[
         { name: 'Name', type: 'text', field: 'name' },
         { name: 'enabled', type: 'toggle', field: 'enabled' },
+        { name: 'eventType', type: 'text', field: 'eventType' },
         { name: 'devIndex', type: 'text', field: 'devIndex' },
         [
           { name: 'protocol', type: 'text', field: 'protocol' },
@@ -30,7 +31,7 @@
           { name: 'password', type: 'password', field: 'password' },
         ]
       ]"
-      :context="{ oid: orgId }"
+      :context="{ oid: oid }"
     />
   </q-page>
 </template>
@@ -49,7 +50,7 @@ import { useCameras } from '../../stores/cameras'
 
 const cameras = useCameras()
 
-const { orgId } = storeToRefs(useOid())
+const { oid } = storeToRefs(useOid())
 
 const timeAgo = new TimeAgo('en-US')
 

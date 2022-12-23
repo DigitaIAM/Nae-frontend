@@ -22,6 +22,18 @@ const routes = [
     ]
   },
   {
+    path: '/hr/',
+    component: () => import('src/layouts/HRLayout.vue'),
+    children: [
+      { path: 'attendance', component: () => import('src/pages/admin/AttendanceReport.vue') },
+      { path: 'people', component: () => import('src/pages/admin/PeoplePage.vue') },
+      { path: 'cameras', component: () => import('src/pages/admin/CamerasPage.vue') },
+
+
+      // { path: '/admin', component: () => import('pages/admin/IndexPage.vue'), meta: { requireLogin: true } }
+    ]
+  },
+  {
     path: '/',
     component: () => import('layouts/HumanResouces.vue'),
     children: [
