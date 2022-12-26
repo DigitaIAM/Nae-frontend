@@ -1,7 +1,6 @@
 import { route } from 'quasar/wrappers'
 import { createRouter, createMemoryHistory, createWebHistory, createWebHashHistory } from 'vue-router'
 import routes from './routes'
-import { api } from '../feathers'
 
 /*
  * If not building with SSR mode, you can
@@ -26,20 +25,6 @@ export default route(function (/* { store, ssrContext } */) {
     // quasar.conf.js -> build -> publicPath
     history: createHistory(process.env.MODE === 'ssr' ? void 0 : process.env.VUE_ROUTER_BASE)
   })
-
-  api.reAuthenticate()
-    .then((msg) => {
-      console.log('show application page', msg)
-
-      const oids = msg.user?.oids || []
-      const { setOid } = useOid()
-      setOid(oids)
-
-    })
-    .catch(() => {
-      console.log('show login page')
-      setTimeout(() => { Router.push('/login') }, 50)
-    });
 
   return Router
 })
