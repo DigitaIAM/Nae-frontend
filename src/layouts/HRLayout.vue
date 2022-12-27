@@ -151,7 +151,8 @@ const name = computed(() => {
 })
 
 const menu = [
-  { label: 'Attendance', icon: 'inbox', link: '/hr/attendance' },
+  { label: 'Attendance', icon: 'calendar_today', link: '/hr/attendance/date' },
+  { label: 'Report', icon: 'date_range', link: '/hr/attendance/month' },
   { separator: true },
   { label: 'People', icon: 'people', link: '/hr/people' },
   { label: 'Cameras', icon: 'camera', link: '/hr/cameras' },

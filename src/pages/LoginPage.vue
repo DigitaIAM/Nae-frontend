@@ -96,7 +96,7 @@ const fnLogin = () => {
       const { setOid } = useOid()
       setOid(oids)
       
-      router.push({ path: '/hr/attendance' })
+      router.push({ path: '/hr/attendance/date' })
     })
     .catch(err => {
       if (err.message) {

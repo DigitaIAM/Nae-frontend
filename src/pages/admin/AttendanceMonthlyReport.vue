@@ -1,44 +1,35 @@
 <template>
   <q-page padding>
+    <q-input v-model="date" label="Date"/>
+    <!-- <q-input v-model="division" label="Division"/> -->
     <div class="row">
-      <div class="col">
-        <div class="row">
-          <div class="col"></div>
-          <div class="col">пришел</div>
-          <div class="col">ушел</div>
-          <div class="col">last from</div>
-          <div class="col">last till</div>
+      <div class="col"></div>
+      <div class="col">пришел</div>
+      <div class="col">ушел</div>
+      <!-- <div class="col">last from</div> -->
+      <!-- <div class="col">last till</div> -->
+    </div>
+    <div v-for="(record, index) in items" :key="index">
+      <q-separator />
+      {{ record?.person?.name }}
+      <div class="row" v-for="(interval, index) in record?.intervals" :key="index">
+        <div class="col"/>
+        <div class="col">
+          {{ time(interval?.from) }}
         </div>
-        <div v-for="(record, index) in items" :key="index">
-          <q-separator />
-          {{ record?.person?.name }}
-          <div class="row" v-for="(interval, index) in record?.intervals" :key="index">
-            <div class="col"/>
-            <div class="col">
-              {{ time(interval?.from) }}
-            </div>
-            <div class="col">
-              {{ time(interval?.till) }}
-            </div>
-            <div class="col">
-              <template v-if="interval?.last_from && interval?.last_from !== interval?.from">
-                {{ time(interval?.last_from) }}
-              </template>
-            </div>
-            <div class="col">
-              <template v-if="interval?.last_till && interval?.last_till !== interval?.till">
-                {{ time(interval?.last_till) }}
-              </template>
-            </div>
-          </div>
+        <div class="col">
+          {{ time(interval?.till) }}
         </div>
-      </div>
-      <div class="col-3">
-        <q-date
-          v-model="date"
-          mask="YYYY-MM-DD"
-          today-btn
-        />
+        <div class="col">
+          <template v-if="interval?.last_from && interval?.last_from !== interval?.from">
+            {{ time(interval?.last_from) }}
+          </template>
+        </div>
+        <div class="col">
+          <template v-if="interval?.last_till && interval?.last_till !== interval?.till">
+            {{ time(interval?.last_till) }}
+          </template>
+        </div>
       </div>
     </div>
   </q-page>

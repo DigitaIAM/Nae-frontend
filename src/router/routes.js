@@ -25,7 +25,8 @@ const routes = [
     path: '/hr/',
     component: () => import('src/layouts/HRLayout.vue'),
     children: [
-      { path: 'attendance', component: () => import('src/pages/admin/AttendanceReport.vue') },
+      { path: 'attendance/date', component: () => import('src/pages/admin/AttendanceReport.vue') },
+      { path: 'attendance/month', component: () => import('src/pages/admin/AttendanceMonthlyReport.vue') },
       { path: 'people', component: () => import('src/pages/admin/PeoplePage.vue') },
       { path: 'cameras', component: () => import('src/pages/admin/CamerasPage.vue') },
 
