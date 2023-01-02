@@ -29,17 +29,13 @@
 
 <script setup>
 import { MonthPicker } from 'vue-month-picker'
-import { ref, computed, watchEffect } from 'vue'
+import { ref, watchEffect } from 'vue'
 
 import { storeToRefs } from 'pinia'
-import { useGet, useFind, usePagination } from 'feathers-pinia'
+// import { useGet, useFind, usePagination } from 'feathers-pinia'
 
 import { api } from '../../feathers'
 import { useOid } from '../../stores/oid'
-import { useAttendanceReport } from '../../stores/attendance-report'
-
-import moment from 'moment'
-import useAsyncComputed from '../../use-async-computed'
 
 const today = () => {
   let yourDate = new Date()
