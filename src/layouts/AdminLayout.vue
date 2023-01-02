@@ -159,7 +159,8 @@ const menu = [
   { label: 'People', icon: 'people', link: '/admin/people' },
   { label: 'Events', icon: 'inbox', link: '/admin/events' },
   { separator: true },
-  { label: 'Attendance', icon: 'inbox', link: '/admin/attendance' },
+  { label: 'Attendance', icon: 'calendar_today', link: '/admin/attendance/date' },
+  { label: 'Report', icon: 'date_range', link: '/admin/attendance/month' },
 ]
 
 const drawer = ref(false)

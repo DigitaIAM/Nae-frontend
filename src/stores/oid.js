@@ -7,7 +7,7 @@ const orgs = useСompanies();
 export const useOid = defineStore({
   id: 'selected-organization',
   state: () => ({
-    myData: { oids: [], selected: undefined }, // useLocalStorage('oid', null),
+    myData: { oids: [], selected: undefined }, // useLocalStorage('oid', { oids: [], selected: undefined }),
     org: {},
     loading: false,
     error: null,

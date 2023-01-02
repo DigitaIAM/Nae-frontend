@@ -29,6 +29,7 @@
     "socket.io-client": "^2",
     "vue": "^3.0.0",
     "vue-chart-3": "^3.1.8",
+    "vue-month-picker": "^1.7.2",
     "vue-router": "^4.0.0"
   },
   "devDependencies": {

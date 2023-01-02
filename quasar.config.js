@@ -29,7 +29,6 @@ module.exports = configure(function (ctx) {
       'axios',
       'TimeAgo',
       'Pinia'
-      
     ],
 
     // https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js#Property%3A-css
