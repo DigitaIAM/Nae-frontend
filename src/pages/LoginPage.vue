@@ -92,10 +92,9 @@ const fnLogin = () => {
     .then(msg => {
       console.log('msg', msg)
 
-      const oids = msg.user?.oids || []
-      const { setOid } = useOid()
-      setOid(oids)
-      
+      const { setUser } = useOid()
+      setUser(msg.user)
+
       router.push({ path: '/hr/attendance/date' })
     })
     .catch(err => {

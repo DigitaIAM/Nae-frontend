@@ -2,10 +2,10 @@
   <q-page padding>
     <!-- <suspense key="people"> -->
       {{ org }}
-    <jornal-and-form
+    <journal-and-form
       singular-title="Company"
       plural-title="Companies"
-      :store="сompanies"
+      :store="companies"
       :cols="[
         { style: 'width: 50%', name: 'name', label: 'name', field: 'name', required: true, align: 'center', sortable: false},
         { style: 'width: 50%', name: 'actions', label: 'actions', field: 'actions', required: true},
@@ -27,14 +27,14 @@
 
 <script setup>
 import { storeToRefs } from 'pinia'
-import JornalAndForm from '../../components/JornalAndForm.vue';
+import JournalAndForm from 'src/components/JournalAndForm.vue';
 
-import { useСompanies } from '../../stores/companies'
-import { useOid } from '../../stores/oid'
+import { useCompanies } from 'src/stores/companies'
+import { useOid } from 'src/stores/oid'
 
 import { useRouter } from 'vue-router'
 
-const сompanies = useСompanies()
+const companies = useCompanies()
 const { org, loading, error } = storeToRefs(useOid())
 const { selectOrganization } = useOid()
 
@@ -43,7 +43,7 @@ const router = useRouter()
 const click = (item, index) => {
   if (index && index !== -1) {
     selectOrganization(item, index)
-    router.push({ path: '/admin/' + index })
+    router.push({ path: '/dmin/' + index })
   } else {
     return true
   }

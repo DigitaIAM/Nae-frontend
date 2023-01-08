@@ -5,7 +5,7 @@
       <q-btn @click="list_devices">query relay</q-btn>
       <q-input label="password" v-model="pass" type="password"/>
     </div> -->
-    <jornal-and-form
+    <journal-and-form
       singular-title="Camera"
       plural-title="Cameras"
       :store="cameras"
@@ -40,13 +40,12 @@
 import { ref, onBeforeUnmount } from 'vue'
 import TimeAgo from 'javascript-time-ago'
 import { storeToRefs } from 'pinia'
-import { useFind, usePagination, useClones } from 'feathers-pinia'
 
-import JornalAndForm from '../../components/JornalAndForm.vue';
+import JournalAndForm from 'src/components/JournalAndForm.vue';
 
-import { useActions } from '../../stores/actions'
-import { useOid } from '../../stores/oid'
-import { useCameras } from '../../stores/cameras'
+import { useActions } from 'src/stores/actions'
+import { useOid } from 'src/stores/oid'
+import { useCameras } from 'src/stores/cameras'
 
 const cameras = useCameras()
 

@@ -1,42 +1,68 @@
 import { defineStore } from 'pinia'
-import { useLocalStorage } from '@vueuse/core'
-import { useСompanies } from './companies'
+import { useStorage } from '@vueuse/core'
+import { useCompanies } from './companies'
 
-const orgs = useСompanies();
+const orgs = useCompanies();
 
 export const useOid = defineStore({
-  id: 'selected-organization',
+  id: 'profile',
   state: () => ({
-    myData: { oids: [], selected: undefined }, // useLocalStorage('oid', { oids: [], selected: undefined }),
+    myData: useStorage(
+      'orgs',
+      { uid: undefined, oids: [], selected: undefined },
+      localStorage,
+      {
+        mergeDefaults: true,
+        serializer: {
+          read: (v) => {
+            console.log('read', v)
+            return v ? JSON.parse(v) : null
+          },
+          write: (v) => {
+            console.log('write', v)
+            console.log('write', JSON.stringify(v.value))
+            return JSON.stringify(v.value)
+          },
+        },
+      }
+    ), // { oids: [], selected: undefined },
     org: {},
     loading: false,
     error: null,
   }),
   getters: {
     oid(state) {
-      if (state.myData.selected) {
-        return state.myData.selected;
+      const data = state.myData
+      if (data.selected) {
+        return data.selected;
       } else {
-        return state.myData.oids[0];
+        return data.oids[0];
       }
     }
   },
   actions: {
-    setOid(oids, selected) {
-      const oid = selected || oids[0]
-      Object.assign(this.myData, { oids: oids, selected: oid });
+    setUser(user) {
+      const id = user?._id
+      const oids = user?.oids || []
 
-      orgs.get(oid)
-        .then(data => {
-          Object.assign(this.org, data);
-        })
-        .catch(e => {
-          console.log('error', e);
-          Object.assign(this.org, {});
-        })
+      let oid = oids[0]
+      if (id && this.myData.uid === id) {
+        oid = this.myData.selected || oid
+      }
+      this.myData.value = { uid: id, oids: oids, selected: oid }
+
+      if (oid) {
+        orgs.get(oid)
+          .then(data => Object.assign(this.org, data))
+          .catch(e => Object.assign(this.org, {}))
+      } else {
+        Object.assign(this.org, {});
+      }
     },
     selectOrganization(org) {
-      this.setOid(this.myData.oids, org?._id)
+      const oid = org?._id
+      Object.assign(this.myData.value, { selected: oid })
+      Object.assign(this.org, org || {})
     },
   },
 })

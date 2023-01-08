@@ -1,7 +1,7 @@
 <template>
   <q-page padding>
     <suspense key="cameras">
-      <jornal-and-form
+      <journal-and-form
         singular-title="Event"
         plural-title="Events"
         :store="events"
@@ -22,11 +22,11 @@
 </template>
 
 <script setup>
-import JornalAndForm from '../../components/JornalAndForm.vue';
+import JournalAndForm from 'src/components/JournalAndForm.vue';
 
 import { storeToRefs } from 'pinia'
-import { useOid } from '../../stores/oid'
-import { useEvents } from '../../stores/events'
+import { useOid } from 'src/stores/oid'
+import { useEvents } from 'src/stores/events'
 
 const { oid } = storeToRefs(useOid())
 const events = useEvents()

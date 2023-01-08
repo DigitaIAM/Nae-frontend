@@ -1,7 +1,7 @@
 <template>
   <q-page padding>
     <suspense key="users">
-      <jornal-and-form
+      <journal-and-form
         singular-title="User"
         plural-title="Users"
         :store="store"
@@ -25,8 +25,8 @@
 </template>
 
 <script setup>
-import JornalAndForm from '../../components/JornalAndForm.vue';
-import { useUsers } from '../../stores/users'
+import JournalAndForm from 'src/components/JournalAndForm.vue';
+import { useUsers } from 'src/stores/users'
 
 const store = useUsers()
 </script>

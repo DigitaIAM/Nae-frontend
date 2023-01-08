@@ -1,6 +1,6 @@
 <template>
   <q-page padding>
-    <jornal-and-form
+    <journal-and-form
       singular-title="Person"
       plural-title="People"
       :store="store"
@@ -16,7 +16,7 @@
       :onSelection="selected"
     />
 
-    <PersonPage 
+    <PersonPage
       title='Person'
       :item="form.item"
       @onclose="onclose"
@@ -25,7 +25,7 @@
 </template>
 
 <script setup>
-import JornalAndForm from '../../components/JornalAndForm.vue';
+import JournalAndForm from 'src/components/JournalAndForm.vue';
 import PersonPage from './PersonPage.vue';
 
 import { dataUrl } from 'src/feathers'

@@ -1,12 +1,11 @@
 <template>
-  <!-- <div>context: {{ context }}</div>
-  <div>error: {{ error }}</div>
-  <div>isPending: {{ isPending }}</div> -->
+  {{ pagination }}
   <q-table
+    ref="tableRef"
     :title="pluralTitle"
     class="sticky-header"
-    v-model:pagination="table_pagination"
-    :loading="isPending"
+    v-model:pagination="pagination"
+    :loading="loading"
     :rows="items"
     :columns="cols"
     row-key="_id"
@@ -59,7 +58,7 @@
         >
           <!-- <div v-if="col.name =='photo'">{{ col.value }}</div> -->
           <!-- <q-avatar rounded v-if="col.name =='photo'" size="80px"> -->
-          <q-img :src="col.value" style="height: 40px; max-width: 35px" v-if="col.name =='photo'" />
+          <q-img :src="col.value" style="height: 40px; max-width: 35px" v-if="col.name ==='photo'" />
           <!-- </q-avatar> -->
           <span v-else>{{ col.value }}</span>
 
@@ -79,13 +78,11 @@
 </template>
 
 <script setup>
+import { api } from "src/feathers"
 import MultiComponent from './MultiComponent.vue';
 import FormComponent from './FormComponent.vue';
 
-import { ref, watchEffect, reactive, computed, onMounted, onUnmounted } from 'vue'
-
-import { storeToRefs } from 'pinia'
-import { useGet, useFind, usePagination } from 'feathers-pinia'
+import {ref, watchEffect, reactive, computed, onMounted, onUnmounted, onBeforeUnmount} from 'vue'
 
 const properties = defineProps({
   singularTitle: String,
@@ -100,75 +97,55 @@ const properties = defineProps({
   onSelection: Function,
 })
 
-
-// let obj = await import('../stores/users.ts');
-// const store = obj['useUsers']()
-
+const tableRef = ref()
+const items = ref([])
+const loading = ref(false)
 const filter = ref('')
 
 const pagination = ref({
-  $limit: 10,
-  $skip: 0,
+  sortBy: 'desc',
+  descending: false,
+  page: 1, // currentPage.value,
+  rowsPerPage: 10, // pagination.value.$limit,
+  rowsNumber: 0, // rowsNumber
 })
 
-const params = computed(() => {
+const onRequest = (props) => {
   const query = {}
   Object.assign(query, properties.context)
-  Object.assign(query, pagination.value)
 
   const search = (filter.value || '').trim()
   if (search) {
     query['$search'] = search
   }
-  return { query: query, paginate: true }
-})
 
-const { items, latestQuery, isPending, error, paginationData } = useFind({ model: properties.store.Model, params })
+  const skip = (pagination.value.page - 1) * pagination.value.rowsPerPage
+  query['skip'] = skip
 
-const { currentPage, toPage } = usePagination(
-  pagination,
-  latestQuery,
-)
+  loading.value = true
+  api.service(properties.store.Model.servicePath).find({ query: query })
+    .then(res => {
+      console.log('res', res);
+      items.value = res.data;
 
-const table_pagination = computed(() => {
-  var rowsNumber = 0
-  const lq = latestQuery.value
-  if (lq && lq.response) {
-    rowsNumber = lq.response.total || 0
-  }
+      // pagination.value.page = page
+      pagination.value.rowsPerPage = res.$limit
+      // pagination.value.sortBy = sortBy
+      // pagination.value.descending = descending
+      pagination.value.rowsNumber = res.total
+      console.log('pagination', pagination)
+    })
+    .catch(e => console.log('error', e))
+    .finally(() => loading.value = false)
 
-  return {
-    sortBy: 'desc',
-    descending: false,
-    page: currentPage.value,
-    rowsPerPage: pagination.value.$limit,
-    rowsNumber: rowsNumber
-  }
-})
-
-const onRequest = (props) => {
-  // console.log('onRequest', props)
-  // console.log('paginationData', paginationData.value)
-  toPage(props.pagination.page)
 }
-
-// watchEffect(
-//   () => {
-//     const lq = latestQuery.value
-//     if (lq && lq.response) {
-//       pagination.value.rowsNumber = lq.response.total || 0
-//     } else {
-//       pagination.value.rowsNumber = 0
-//     }
-//   },
-// )
 
 const form = reactive({
   item: undefined,
 })
 
 const createNew = () => {
-  console.log('createNew', properties.onSelection)
+  // console.log('createNew', properties.onSelection)
   const item = new properties.store.Model({})
   Object.assign(item, properties.context)
   if (properties.onSelection) {
@@ -181,7 +158,7 @@ const createNew = () => {
 }
 
 const onclose = () => {
-  console.log('close')
+  // console.log('close')
   form.item = undefined
 }
 
@@ -196,6 +173,19 @@ const onclick = (evt, row, index) => {
     form.item = row
   }
 }
+
+onMounted(() => {
+  // get initial data from server (1st page)
+  tableRef.value.requestServerInteraction()
+})
+
+const handlePatched = (item) => {
+  console.log('patched', item)
+}
+properties.store.Model.on('patched', handlePatched)
+onBeforeUnmount(() => {
+  properties.store.Model.off('patched', handlePatched)
+})
 </script>
 
 <style lang="sass" scoped>

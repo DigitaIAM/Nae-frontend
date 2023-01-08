@@ -6,7 +6,7 @@
       </div>
       <q-space/>
       <div class="col-10 ">
-        <jornal-and-form
+        <journal-and-form
           singular-title="Добавить"
           plural-title="Сегодня"
           :store="store"
@@ -40,7 +40,7 @@ import { ref, reactive } from 'vue'
 
 import TodayChart from 'src/components/TodayChart.vue';
 
-import JornalAndForm from 'src/components/JornalAndForm.vue';
+import JournalAndForm from 'src/components/JournalAndForm.vue';
 import { usePeople } from '../stores/people'
 
 const store = usePeople()

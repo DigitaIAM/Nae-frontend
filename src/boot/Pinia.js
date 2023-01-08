@@ -10,9 +10,8 @@ export default ({ app, router, store }) => {
   .then((msg) => {
     console.log('show application page', msg)
 
-    const oids = msg.user?.oids || []
-    const { setOid } = useOid()
-    setOid(oids)
+    const { setUser } = useOid()
+    setUser(msg.user)
 
   })
   .catch((e) => {

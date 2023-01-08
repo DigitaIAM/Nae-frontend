@@ -14,6 +14,7 @@
           @click="drawer = !drawer"
         >苗</q-btn>
 
+        <!--
         <q-select
           ref="search" dark dense standout use-input hide-selected
           class="GL__toolbar-select"
@@ -59,6 +60,7 @@
           </template>
 
         </q-select>
+        -->
 
         <q-space />
 
@@ -66,6 +68,7 @@
 
         <q-space />
 
+        <!--
         <div class="q-pl-sm q-gutter-sm row items-center no-wrap">
           <q-btn v-if="$q.screen.gt.xs" dense flat round size="sm" icon="notifications" />
 
@@ -91,6 +94,7 @@
             </q-menu>
           </q-btn>
         </div>
+        -->
 
       </q-toolbar>
     </q-header>
@@ -142,25 +146,17 @@ import { useOid } from 'src/stores/oid'
 
 const { org } = storeToRefs(useOid())
 const name = computed(() => {
-  console.log('org', org.value)
-  if (org.value) {
-    return org.value.name || ''
-  } else {
-    return ''
-  }
+  return org.value?.name || ''
 })
 
 const menu = [
-  { label: 'Users', icon: 'person', link: '/dmin/users' },
-  { label: 'Companies', icon: 'corporate_fare', link: '/dmin/companies' },
+  { label: 'Складской учет', icon: 'calendar_today', link: '/wh' },
   { separator: true },
-  { label: 'Cameras', icon: 'camera', link: '/dmin/cameras' },
-  { label: 'Shifts', icon: 'calendar_month', link: '/dmin/shifts' },
-  { label: 'People', icon: 'people', link: '/dmin/people' },
-  { label: 'Events', icon: 'inbox', link: '/dmin/events' },
+  { label: 'Приходы', icon: 'login', link: '/wh/receive' },
+  { label: 'Расходы', icon: 'logout', link: '/wh/issue' },
   { separator: true },
-  { label: 'Attendance', icon: 'calendar_today', link: '/dmin/attendance/date' },
-  { label: 'Report', icon: 'date_range', link: '/dmin/attendance/month' },
+  { label: 'Места хранения', icon: 'home', link: '/wh/storages' },
+  { label: 'Номенклатура', icon: 'trolley', link: '/wh/goods' },
 ]
 
 const drawer = ref(false)

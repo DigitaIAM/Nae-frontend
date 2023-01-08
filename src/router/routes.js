@@ -5,7 +5,7 @@ const routes = [
     component: () => import('pages/LoginPage.vue')
   },
   {
-    path: '/admin/',
+    path: '/dmin/',
     component: () => import('src/layouts/AdminLayout.vue'),
     children: [
       { path: '', component: () => import('src/pages/admin/CompaniesPage.vue') },
@@ -19,7 +19,7 @@ const routes = [
       { path: 'attendance/date', component: () => import('src/pages/admin/AttendanceReport.vue') },
       { path: 'attendance/month', component: () => import('src/pages/admin/AttendanceMonthlyReport.vue') },
 
-      // { path: '/admin', component: () => import('pages/admin/IndexPage.vue'), meta: { requireLogin: true } }
+      // { path: '/dmin', component: () => import('pages/admin/IndexPage.vue'), meta: { requireLogin: true } }
     ]
   },
   {
@@ -30,9 +30,16 @@ const routes = [
       { path: 'attendance/month', component: () => import('src/pages/admin/AttendanceMonthlyReport.vue') },
       { path: 'people', component: () => import('src/pages/admin/PeoplePage.vue') },
       { path: 'cameras', component: () => import('src/pages/admin/CamerasPage.vue') },
-
-
-      // { path: '/admin', component: () => import('pages/admin/IndexPage.vue'), meta: { requireLogin: true } }
+    ]
+  },
+  {
+    path: '/wh/',
+    component: () => import('src/layouts/WHLayout.vue'),
+    children: [
+      { path: 'receive', component: () => import('src/pages/wh/DocReceive.vue') },
+      { path: 'issue', component: () => import('src/pages/wh/DocIssue.vue') },
+      { path: 'storages', component: () => import('src/pages/wh/RefStorages.vue') },
+      { path: 'goods', component: () => import('src/pages/wh/RefGoods.vue') },
     ]
   },
   {

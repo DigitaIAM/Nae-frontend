@@ -1,6 +1,6 @@
 <template>
   <q-page padding>
-    <jornal-and-form
+    <journal-and-form
       singular-title="Shift"
       plural-title="Shifts"
       :store="store"
@@ -16,11 +16,11 @@
 </template>
 
 <script setup>
-import JornalAndForm from '../../components/JornalAndForm.vue';
-import { useShifts } from '../../stores/shifts'
+import JournalAndForm from 'src/components/JournalAndForm.vue';
+import { useShifts } from 'src/stores/shifts'
 
 import { storeToRefs } from 'pinia'
-import { useOid } from '../../stores/oid'
+import { useOid } from 'src/stores/oid'
 
 const { orgId } = storeToRefs(useOid())
 

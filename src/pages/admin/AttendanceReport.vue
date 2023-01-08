@@ -50,8 +50,8 @@ import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useGet, useFind, usePagination } from 'feathers-pinia'
 
-import { useOid } from '../../stores/oid'
-import { useAttendanceReport } from '../../stores/attendance-report'
+import { useOid } from 'src/stores/oid'
+import { useAttendanceReport } from 'src/stores/attendance-report'
 
 const today = () => {
   let yourDate = new Date()
