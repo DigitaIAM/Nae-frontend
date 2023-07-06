@@ -70,6 +70,12 @@
       <q-separator />
       <q-card-actions align="right" class="bg-white text-teal">
         <template v-if="view === 'form'">
+          <q-btn flat label="Unregister on cameras" color="primary"
+                 @click="onUnregisterUser"
+                 :disable="loading"
+                 :loading="loading"
+                 :percentage="percentage"
+          />
           <q-btn flat label="Register on cameras" color="primary"
             @click="onRegisterUser"
             :disable="loading"
@@ -162,10 +168,10 @@ watchEffect(() => {
   if (props.item) {
     if (id !== last_id) {
       last_id = id
-      
+
       const { clones, saveHandlers } = useClones({item: props.item}, {useExisting: false, debug: true})
       const { save_item } = saveHandlers
-      
+
       if (clones.item) {
         clone.value = clones.item
         save.value = save_item
@@ -212,7 +218,7 @@ const doClose = () => {
   clone.value = {}
   save.value = undefined
   last_id = ''
-  
+
   emit('onclose')
 }
 
@@ -274,6 +280,28 @@ const registerImage = (cid) => {
     })
 }
 
+const onUnregisterUser = () => {
+  tasksReset()
+  tasks.total = -1
+  cameras.find({query:{oid: oid.value}})
+    .then(res => {
+      let cams = (res.data || [])
+      tasks.total = cams.length
+      cams.forEach(cam => {
+        actions
+          .create({command: 'hikvision-unregister_image', params: {oid: oid.value, cid: cam._id, pid: pid.value}})
+          .then(task => {
+            console.log('onUnregisterUser task', task)
+            tasks.requests.push(task)
+          })
+          .catch(e => {
+            console.log('error at onUnregisterUser', e)
+            tasks.complited += 1
+          })
+      });
+    })
+}
+
 const handlePatched = (task) => {
   console.log('patched', task)
   if (task?.state?.status === 'completed') {
@@ -305,6 +333,15 @@ const handlePatched = (task) => {
         const msg = task?.data?.errorMsg
         if (!(msg === 'Operation completed.')) {
             tasks.errors.push(msg || item?.data)
+        }
+      }
+    } else if (task?.command === 'hikvision-unregister_image') {
+      console.log('hikvision-unregister_image')
+      if (task.state?.status === 'completed') {
+        console.log('completed')
+        const msg = task?.data?.errorMsg
+        if (!(msg === 'Operation completed.')) {
+          tasks.errors.push(msg || item?.data)
         }
       }
     }
